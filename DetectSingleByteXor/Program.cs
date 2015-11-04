@@ -67,7 +67,7 @@ namespace DetectSingleByteXor
                 if (e == 'e' || e == 't' || e == 'a')
                     commonCount++;
             }
-            if (commonCount > 5)
+            if (commonCount > 5) //hardcoded because I'm lazy
                 Console.WriteLine(decoded);
         }
     }

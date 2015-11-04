@@ -11,7 +11,42 @@ namespace Break_repeating_key_XOR
     {
         static void Main(string[] args)
         {
-            DetermineProbableKeySize();
+            //DetermineProbableKeySize();
+            BreakCipherText(5);
+        }
+
+        static void BreakCipherText(int KEYSIZE)
+        {
+            string contents = File.ReadAllText(@"C:\Users\jabedude\Documents\Visual Studio 2015\Projects\MatasanoChallenge\Break repeating-key XOR\6.txt");
+            byte[] cryptoBytes = Base64Decode(contents);
+            
+            byte[] firstArray = new byte[cryptoBytes.Length / 5];
+            byte[] secondArray = new byte[cryptoBytes.Length / 5];
+            byte[] thirdArray = new byte[cryptoBytes.Length / 5];
+            byte[] fourthArray = new byte[cryptoBytes.Length / 5];
+            byte[] fifthArray = new byte[cryptoBytes.Length / 5];
+
+            for (int i = 0; i < cryptoBytes.Length; i += KEYSIZE)
+            {
+                //assuming keysize = 5, I'm creating 5 byte lists (one for each value in the Repeating-Key).
+                //I don't know how/too lazy to programatically generate the number of lists needed 
+                firstArray = cryptoBytes.Skip(i).Take(1).ToArray();
+                firstArray = cryptoBytes.Skip(i+1).Take(1).ToArray();
+                firstArray = cryptoBytes.Skip(i + 2).Take(1).ToArray();
+                firstArray = cryptoBytes.Skip(i + 3).Take(1).ToArray();
+                firstArray = cryptoBytes.Skip(i + 4).Take(1).ToArray();
+            }
+            
+            List<byte[]> arrayList = new List<byte[]> { firstArray, secondArray,
+                                                      thirdArray, fourthArray, fifthArray };
+            
+            foreach (byte[] b in arrayList)
+            {
+                for (byte keyVal = 0; keyVal < 255; keyVal++)
+                {
+                    xorBytes(b, keyVal);
+                }
+            }
 
         }
 
@@ -98,6 +133,32 @@ namespace Break_repeating_key_XOR
         {
             return Convert.FromBase64String(cryptoText);
             //string decodedString = Encoding.ASCII.GetString(data); <-for changing byte[] to string
+        }
+
+        static void xorBytes(byte[] _byteArray, byte keyVal)
+        {
+            List<byte> xorByte = new List<byte>();
+            ASCIIEncoding ascii = new ASCIIEncoding();
+            for (int i = 0; i < _byteArray.Length; i++)
+            {
+                xorByte.Add((byte)(_byteArray[i] ^ keyVal));
+            }
+            byte[] xorBytesArray = xorByte.ToArray();
+            string decoded = ascii.GetString(xorBytesArray, 0, xorBytesArray.Length);
+            File.AppendAllText(@"C:\Users\jabedude\Desktop\HERE.txt", decoded + "\n");
+            //Above this line decodes strings
+
+            //Console.WriteLine(decoded);
+
+            //Checks if decoded string has common chars
+            int commonCount = 0;
+            foreach (char e in decoded)
+            {
+                if (e == 'e' || e == 't' || e == 'a')
+                    commonCount++;
+            }
+            if (commonCount > 10) //hardcoded cause I'm lazy
+                Console.WriteLine(keyVal);
         }
 
     }
